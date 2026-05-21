@@ -173,11 +173,15 @@ def home(request):
             # Save only basic data
             Identification.objects.create(
 
-                image=image_file,
+                image=image,
 
                 common_name=common_name,
 
                 scientific_name=scientific_name,
+
+                family_name=family_name,
+
+                tamil_name=tamil_name,
 
                 confidence=confidence,
 
