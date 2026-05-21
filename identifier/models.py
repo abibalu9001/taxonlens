@@ -3,6 +3,16 @@ from django.db import models
 
 class Identification(models.Model):
 
+    image = models.ImageField(
+
+        upload_to='organisms/',
+
+        blank=True,
+
+        null=True
+
+    )
+
     common_name = models.CharField(max_length=200)
 
     scientific_name = models.CharField(max_length=200)
