@@ -1,28 +1,58 @@
 from django.db import models
 
+
 class Identification(models.Model):
 
-    image = models.ImageField(
-        upload_to='organisms/'
+    common_name = models.CharField(max_length=200)
+
+    scientific_name = models.CharField(max_length=200)
+
+    family_name = models.CharField(
+
+        max_length=200,
+
+        blank=True,
+
+        null=True
+
     )
 
-    common_name = models.CharField(
-        max_length=200
-    )
+    tamil_name = models.CharField(
 
-    scientific_name = models.CharField(
-        max_length=200
+        max_length=200,
+
+        blank=True,
+
+        null=True
+
     )
 
     confidence = models.CharField(
-        max_length=50
+
+        max_length=50,
+
+        blank=True,
+
+        null=True
+
     )
 
-    ai_cost = models.FloatField()
+    ai_cost = models.CharField(
+
+        max_length=50,
+
+        blank=True,
+
+        null=True
+
+    )
 
     created_at = models.DateTimeField(
+
         auto_now_add=True
+
     )
 
     def __str__(self):
+
         return self.common_name
