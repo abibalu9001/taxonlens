@@ -1,12 +1,9 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-<link
-    rel="shortcut icon"
-    href="{% static 'favicon.ico' %}?v=2"
->
 
 <meta charset="UTF-8">
 
@@ -15,10 +12,14 @@
     content="width=device-width, initial-scale=1.0"
 >
 
+<link
+    rel="shortcut icon"
+    href="{% static 'favicon.ico' %}?v=2"
+>
+
 <title>
     TaxonLens
 </title>
-
 
 <link
     rel="preconnect"
@@ -535,6 +536,27 @@ a:hover{
     color:white;
 }
 
+/* Footer */
+
+.footer{
+
+    margin-top:35px;
+
+    text-align:center;
+
+    color:#d8f3dc;
+
+    font-size:13px;
+
+    opacity:0.85;
+
+    line-height:1.8;
+
+    letter-spacing:0.5px;
+
+    animation:fadeIn 2s ease;
+}
+
 /* Responsive */
 
 @media(max-width:600px){
@@ -766,6 +788,15 @@ a:hover{
         hidden
         onchange="uploadSelectedImage(event)"
     >
+
+    <!-- Footer -->
+    <div class="footer">
+
+        © 2026 TaxonLens • Developed by Abinav Balasubbiramaniam<br>
+
+        Discover • Identify • Learn
+
+    </div>
 
 </div>
 
