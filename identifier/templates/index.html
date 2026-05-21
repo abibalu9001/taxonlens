@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    TaxonLens
+</title>
+
+<link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+>
+
+<link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+rel="stylesheet"
+>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+
+    min-height:100vh;
+
+    background:
+    linear-gradient(
+        135deg,
+        #081c15,
+        #1b4332,
+        #2d6a4f
+    );
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    overflow-x:hidden;
+
+    padding:30px;
+
+    color:white;
+}
+
+/* Animated Background */
+
+body::before,
+body::after{
+
+    content:'';
+
+    position:absolute;
+
+    width:450px;
+    height:450px;
+
+    border-radius:50%;
+
+    filter:blur(120px);
+
+    opacity:0.35;
+
+    animation:float 8s infinite alternate ease-in-out;
+}
+
+body::before{
+
+    background:#52b788;
+
+    top:-150px;
+    left:-150px;
+}
+
+body::after{
+
+    background:#95d5b2;
+
+    bottom:-150px;
+    right:-150px;
+}
+
+@keyframes float{
+
+    from{
+        transform:
+        translateY(0px)
+        translateX(0px);
+    }
+
+    to{
+        transform:
+        translateY(40px)
+        translateX(30px);
+    }
+}
+
+/* Main Container */
+
+.container{
+
+    width:100%;
+    max-width:560px;
+
+    background:
+    rgba(255,255,255,0.08);
+
+    border:
+    1px solid rgba(255,255,255,0.15);
+
+    backdrop-filter:blur(20px);
+
+    border-radius:35px;
+
+    padding:30px;
+
+    position:relative;
+
+    z-index:10;
+
+    box-shadow:
+    0 15px 40px rgba(0,0,0,0.3);
+
+    animation:fadeUp 1s ease;
+}
+
+@keyframes fadeUp{
+
+    from{
+        opacity:0;
+        transform:translateY(50px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0px);
+    }
+}
+
+/* Logo */
+
+.logo{
+
+    width:90px;
+    height:90px;
+
+    margin:auto;
+
+    border-radius:50%;
+
+    background:
+    linear-gradient(
+        135deg,
+        #52b788,
+        #95d5b2
+    );
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    font-size:42px;
+
+    box-shadow:
+    0 0 25px rgba(82,183,136,0.6);
+
+    animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+
+    0%{
+        transform:scale(1);
+    }
+
+    50%{
+        transform:scale(1.05);
+    }
+
+    100%{
+        transform:scale(1);
+    }
+}
+
+/* Title */
+
+h1{
+
+    text-align:center;
+
+    margin-top:18px;
+
+    font-size:34px;
+
+    font-weight:700;
+}
+
+.subtitle{
+
+    text-align:center;
+
+    margin-top:12px;
+
+    color:#d8f3dc;
+
+    font-size:14px;
+
+    line-height:1.6;
+}
+
+/* Camera Section */
+
+.camera-box{
+
+    margin-top:30px;
+
+    overflow:hidden;
+
+    border-radius:25px;
+
+    position:relative;
+
+    border:
+    2px solid rgba(255,255,255,0.15);
+}
+
+video{
+
+    width:100%;
+
+    display:block;
+
+    border-radius:25px;
+}
+
+/* Scan Animation */
+
+.scan-line{
+
+    position:absolute;
+
+    width:100%;
+    height:4px;
+
+    background:
+    linear-gradient(
+        to right,
+        transparent,
+        #95d5b2,
+        transparent
+    );
+
+    top:0;
+
+    animation:scan 3s infinite linear;
+}
+
+@keyframes scan{
+
+    0%{
+        top:0%;
+    }
+
+    100%{
+        top:100%;
+    }
+}
+
+/* Buttons */
+
+.buttons{
+
+    margin-top:25px;
+
+    display:grid;
+
+    grid-template-columns:1fr;
+
+    gap:15px;
+}
+
+button{
+
+    border:none;
+
+    padding:16px;
+
+    border-radius:18px;
+
+    font-size:15px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:0.3s;
+}
+
+.capture-btn{
+
+    background:
+    linear-gradient(
+        135deg,
+        #2d6a4f,
+        #52b788
+    );
+
+    color:white;
+
+    box-shadow:
+    0 10px 25px rgba(82,183,136,0.4);
+}
+
+.capture-btn:hover{
+
+    transform:
+    translateY(-4px)
+    scale(1.02);
+}
+
+.switch-btn{
+
+    background:
+    rgba(255,255,255,0.12);
+
+    color:white;
+
+    border:
+    1px solid rgba(255,255,255,0.2);
+}
+
+.switch-btn:hover{
+
+    background:
+    rgba(255,255,255,0.2);
+
+    transform:
+    translateY(-4px);
+}
+
+.upload-btn{
+
+    background:
+    linear-gradient(
+        135deg,
+        #40916c,
+        #74c69d
+    );
+
+    color:white;
+
+    box-shadow:
+    0 10px 25px rgba(116,198,157,0.4);
+}
+
+.upload-btn:hover{
+
+    transform:
+    translateY(-4px)
+    scale(1.02);
+}
+
+/* Loading */
+
+.loading{
+
+    display:none;
+
+    margin-top:22px;
+
+    text-align:center;
+
+    color:#d8f3dc;
+
+    animation:blink 1s infinite;
+}
+
+@keyframes blink{
+
+    0%{
+        opacity:0.4;
+    }
+
+    50%{
+        opacity:1;
+    }
+
+    100%{
+        opacity:0.4;
+    }
+}
+
+/* Result Box */
+
+.result-box{
+
+    margin-top:30px;
+
+    background:
+    rgba(255,255,255,0.08);
+
+    border-radius:25px;
+
+    padding:22px;
+
+    border:
+    1px solid rgba(255,255,255,0.1);
+
+    animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+    }
+
+    to{
+        opacity:1;
+    }
+}
+
+.result-title{
+
+    font-size:22px;
+
+    margin-bottom:20px;
+
+    font-weight:600;
+}
+
+.result-item{
+
+    margin-bottom:18px;
+}
+
+.label{
+
+    color:#d8f3dc;
+
+    font-size:13px;
+}
+
+.value{
+
+    margin-top:5px;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    word-wrap:break-word;
+}
+
+/* Confidence Bar */
+
+.confidence-bar{
+
+    width:100%;
+    height:14px;
+
+    background:
+    rgba(255,255,255,0.1);
+
+    border-radius:30px;
+
+    overflow:hidden;
+
+    margin-top:10px;
+}
+
+.confidence-fill{
+
+    height:100%;
+
+    width:{{ confidence|default:'0%' }};
+
+    background:
+    linear-gradient(
+        90deg,
+        #52b788,
+        #95d5b2
+    );
+
+    border-radius:30px;
+
+    animation:grow 2s ease;
+}
+
+@keyframes grow{
+
+    from{
+        width:0%;
+    }
+}
+
+/* Links */
+
+a{
+
+    color:#95d5b2;
+
+    text-decoration:none;
+
+    transition:0.3s;
+}
+
+a:hover{
+
+    color:white;
+}
+
+/* Responsive */
+
+@media(max-width:600px){
+
+    .container{
+        padding:22px;
+    }
+
+    h1{
+        font-size:28px;
+    }
+
+    .logo{
+        width:75px;
+        height:75px;
+        font-size:34px;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Logo -->
+    <div class="logo">
+        🦋
+    </div>
+
+    <!-- Title -->
+    <h1>
+        TaxonLens
+    </h1>
+
+    <p class="subtitle">
+        Capture or upload any organism and instantly
+        discover its scientific identity using AI.
+    </p>
+
+    <!-- Camera -->
+    <div class="camera-box">
+
+        <video
+            id="video"
+            autoplay
+            playsinline
+        ></video>
+
+        <div class="scan-line"></div>
+
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+
+        <button
+            class="capture-btn"
+            onclick="captureAndIdentify()"
+        >
+            📸 Capture & Identify
+        </button>
+
+        <button
+            class="switch-btn"
+            onclick="switchCamera()"
+        >
+            🔄 Switch Camera
+        </button>
+
+        <button
+            class="upload-btn"
+            onclick="document.getElementById('realFileInput').click()"
+        >
+            🖼 Upload Image
+        </button>
+
+    </div>
+
+    <!-- Loading -->
+    <div
+        class="loading"
+        id="loading"
+    >
+        🔍 AI is identifying organism...
+    </div>
+
+    <!-- Result -->
+    {% if common_name %}
+
+    <div class="result-box">
+
+        <div class="result-title">
+            Identification Result
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                Common Name
+            </div>
+
+            <div class="value">
+                {{ common_name }}
+            </div>
+
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                Scientific Name
+            </div>
+
+            <div class="value">
+                {{ scientific_name }}
+            </div>
+
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                Family Name
+            </div>
+
+            <div class="value">
+                {{ family_name }}
+            </div>
+
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                Tamil Name
+            </div>
+
+            <div class="value">
+                {{ tamil_name }}
+            </div>
+
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                Description
+            </div>
+
+            <div class="value">
+                {{ description }}
+            </div>
+
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                Wikipedia
+            </div>
+
+            <div class="value">
+
+                <a
+                    href="{{ wikipedia_link }}"
+                    target="_blank"
+                >
+                    View Details
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="result-item">
+
+            <div class="label">
+                AI Confidence Estimate
+            </div>
+
+            <div class="value">
+                {{ confidence }}
+            </div>
+
+            <div class="confidence-bar">
+
+                <div class="confidence-fill"></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+    <!-- Hidden Canvas -->
+    <canvas
+        id="canvas"
+        style="display:none;"
+    ></canvas>
+
+    <!-- Hidden Form -->
+    <form
+        id="uploadForm"
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        {% csrf_token %}
+
+        <input
+            type="file"
+            name="image"
+            id="imageInput"
+            hidden
+        >
+
+    </form>
+
+    <!-- Upload Input -->
+    <input
+        type="file"
+        id="realFileInput"
+        accept="image/*"
+        hidden
+        onchange="uploadSelectedImage(event)"
+    >
+
+</div>
+
+<script>
+
+const video =
+    document.getElementById("video");
+
+const canvas =
+    document.getElementById("canvas");
+
+const imageInput =
+    document.getElementById("imageInput");
+
+const loading =
+    document.getElementById("loading");
+
+let currentFacingMode =
+    "environment";
+
+let currentStream =
+    null;
+
+
+/* Start Camera */
+
+async function startCamera(
+    facingMode
+) {
+
+    if (currentStream) {
+
+        currentStream
+            .getTracks()
+            .forEach(track => {
+                track.stop();
+            });
+    }
+
+    currentStream =
+        await navigator
+        .mediaDevices
+        .getUserMedia({
+
+        video: {
+            facingMode: facingMode
+        }
+
+    });
+
+    video.srcObject =
+        currentStream;
+}
+
+
+/* Start Default Camera */
+
+startCamera(
+    currentFacingMode
+);
+
+
+/* Switch Camera */
+
+async function switchCamera() {
+
+    currentFacingMode =
+
+        currentFacingMode ===
+        "environment"
+
+        ? "user"
+
+        : "environment";
+
+    await startCamera(
+        currentFacingMode
+    );
+}
+
+
+/* Capture Image */
+
+function captureAndIdentify() {
+
+    loading.style.display =
+        "block";
+
+    const context =
+        canvas.getContext("2d");
+
+    canvas.width =
+        video.videoWidth;
+
+    canvas.height =
+        video.videoHeight;
+
+    context.drawImage(
+        video,
+        0,
+        0
+    );
+
+    canvas.toBlob(blob => {
+
+        const file = new File(
+            [blob],
+            "capture.png",
+            {
+                type:"image/png"
+            }
+        );
+
+        const dataTransfer =
+            new DataTransfer();
+
+        dataTransfer
+            .items
+            .add(file);
+
+        imageInput.files =
+            dataTransfer.files;
+
+        document
+            .getElementById(
+                "uploadForm"
+            )
+            .submit();
+
+    });
+}
+
+
+/* Upload Existing Image */
+
+function uploadSelectedImage(
+    event
+) {
+
+    loading.style.display =
+        "block";
+
+    const file =
+        event.target.files[0];
+
+    const dataTransfer =
+        new DataTransfer();
+
+    dataTransfer
+        .items
+        .add(file);
+
+    imageInput.files =
+        dataTransfer.files;
+
+    document
+        .getElementById(
+            "uploadForm"
+        )
+        .submit();
+}
+
+</script>
+
+</body>
+
+</html>
