@@ -10,12 +10,20 @@ from .models import Identification
 
 import os
 
+
 # Configure Gemini API
-api_key=os.environ.get(
-    "GEMINI_API_KEY"
+
+genai.configure(
+
+    api_key=os.environ.get(
+        "GEMINI_API_KEY"
+    )
+
 )
 
+
 # Gemini Model
+
 model = genai.GenerativeModel(
 
     "gemini-2.5-flash"
@@ -46,13 +54,20 @@ def home(request):
 
         try:
 
-            # Get uploaded image
-            image_file = request.FILES["image"]
+            # Original uploaded file
 
-            image = Image.open(image_file)
+            uploaded_image = request.FILES["image"]
+
+
+            # Open image using Pillow
+
+            image = Image.open(
+                uploaded_image
+            )
 
 
             # Send image to Gemini
+
             response = model.generate_content([
 
                 """
@@ -95,56 +110,115 @@ def home(request):
             ])
 
 
-            # Get response text
+            # Get Gemini response text
+
             text = response.text
 
 
             # Remove markdown formatting
+
             text = text.replace(
+
                 "```json",
+
                 ""
+
             )
 
             text = text.replace(
+
                 "```",
+
                 ""
+
             )
 
 
             # Convert JSON text to dictionary
+
             data = json.loads(text)
 
 
             # Extract data
-            common_name = data["common_name"]
 
-            scientific_name = data["scientific_name"]
+            common_name = data.get(
 
-            family_name = data["family_name"]
+                "common_name",
 
-            tamil_name = data["tamil_name"]
+                "-"
 
-            confidence = data["confidence"]
+            )
 
-            wikipedia_link = data["wikipedia_link"]
+            scientific_name = data.get(
 
-            description = data["description"]
+                "scientific_name",
+
+                "-"
+
+            )
+
+            family_name = data.get(
+
+                "family_name",
+
+                "-"
+
+            )
+
+            tamil_name = data.get(
+
+                "tamil_name",
+
+                "-"
+
+            )
+
+            confidence = data.get(
+
+                "confidence",
+
+                "0%"
+
+            )
+
+            wikipedia_link = data.get(
+
+                "wikipedia_link",
+
+                ""
+
+            )
+
+            description = data.get(
+
+                "description",
+
+                "-"
+
+            )
 
 
-            # ===== REAL AI COST CALCULATION =====
+            # ===== REAL AI COST =====
 
             usage = response.usage_metadata
 
+
             prompt_tokens = (
+
                 usage.prompt_token_count
+
             )
+
 
             response_tokens = (
+
                 usage.candidates_token_count
+
             )
 
 
-            # Gemini Flash pricing
+            # Gemini Flash Pricing
+
             input_cost = (
 
                 prompt_tokens / 1_000_000
@@ -159,21 +233,20 @@ def home(request):
             ) * 0.30
 
 
-            ai_cost = (
-                input_cost + output_cost
-            )
-
-
             ai_cost = round(
-                ai_cost,
+
+                input_cost + output_cost,
+
                 8
+
             )
 
 
-            # Save only basic data
+            # Save to database
+
             Identification.objects.create(
 
-                image=image,
+                image=uploaded_image,
 
                 common_name=common_name,
 
@@ -205,7 +278,9 @@ def home(request):
             wikipedia_link = ""
 
             description = (
+
                 "Unable to identify organism."
+
             )
 
             ai_cost = 0
