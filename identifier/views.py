@@ -72,6 +72,26 @@ def identify_plant(image_file):
     data = response.json()
 
 
+    # Safety check
+
+    if "results" not in data:
+
+        raise Exception(
+
+            f"PlantNet Error: {data}"
+
+        )
+
+
+    if len(data["results"]) == 0:
+
+        raise Exception(
+
+            "No plant identified"
+
+        )
+
+
     best_match = data[
         "results"
     ][0]
@@ -93,7 +113,13 @@ def identify_plant(image_file):
     )
 
 
-    return scientific_name, confidence
+    return (
+
+        scientific_name,
+
+        confidence
+
+    )
 
 
 # ==============================
@@ -125,6 +151,26 @@ def identify_animal(image_url):
     )
 
     result = response.json()
+
+
+    # Safety check
+
+    if "results" not in result:
+
+        raise Exception(
+
+            f"iNaturalist Error: {result}"
+
+        )
+
+
+    if len(result["results"]) == 0:
+
+        raise Exception(
+
+            "No animal identified"
+
+        )
 
 
     best = result[
@@ -168,7 +214,6 @@ def identify_animal(image_url):
         confidence
 
     )
-
 
 # ==============================
 # Main Home View
