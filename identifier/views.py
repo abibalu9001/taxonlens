@@ -68,7 +68,7 @@ def identify_plant(image_file):
     img = img.convert("RGB")
 
 
-    # Convert to JPEG in memory
+    # Convert to JPEG
 
     buffer = BytesIO()
 
@@ -155,126 +155,97 @@ def identify_plant(image_file):
 
         scientific_name,
 
-        confidence
+        f"{confidence}%"
 
     )
 
 
 # =========================================
-# ANIMAL IDENTIFICATION
+# ANIMAL IDENTIFICATION USING GEMINI
 # =========================================
 
-def identify_animal(image_file):
+def identify_animal(image):
 
-    url = (
+    response = model.generate_content([
 
-        "https://api.inaturalist.org/v1/"
+        """
+        You are an expert zoologist and wildlife taxonomist.
 
-        "computervision/score_image"
+        Carefully analyze this animal image.
+
+        Identify the organism as accurately as possible using:
+        - body shape
+        - fur/feathers/scales
+        - color patterns
+        - horns/beak/tail
+        - habitat clues
+        - visible anatomy
+
+        Rules:
+        - Be scientifically accurate.
+        - Do NOT guess random species.
+        - If uncertain, provide the closest likely species.
+        - Confidence must reflect actual certainty.
+        - Use proper scientific taxonomy.
+        - Avoid markdown formatting.
+        - Return ONLY valid JSON.
+        - common_name should be simple and human readable.
+        - scientific_name must use proper binomial nomenclature.
+        - confidence must be percentage only.
+
+        Return format:
+
+        {
+          "common_name": "",
+          "scientific_name": "",
+          "confidence": ""
+        }
+        """,
+
+        image
+
+    ])
+
+
+    text = response.text
+
+    text = text.replace(
+        "```json",
+        ""
+    )
+
+    text = text.replace(
+        "```",
+        ""
+    )
+
+
+    data = json.loads(text)
+
+
+    common_name = data.get(
+
+        "common_name",
+
+        "-"
 
     )
 
 
-    # Open image
+    scientific_name = data.get(
 
-    img = Image.open(image_file)
+        "scientific_name",
 
-
-    # Convert to RGB
-
-    img = img.convert("RGB")
-
-
-    # Convert to JPEG
-
-    buffer = BytesIO()
-
-    img.save(
-
-        buffer,
-
-        format="JPEG"
-
-    )
-
-    buffer.seek(0)
-
-
-    files = {
-
-        "image": (
-
-            "image.jpg",
-
-            buffer,
-
-            "image/jpeg"
-
-        )
-
-    }
-
-
-    response = requests.post(
-
-        url,
-
-        files=files
+        "-"
 
     )
 
 
-    result = response.json()
+    confidence = data.get(
 
+        "confidence",
 
-    # Safety checks
-
-    if "results" not in result:
-
-        raise Exception(
-
-            f"iNaturalist Error: {result}"
-
-        )
-
-
-    if len(result["results"]) == 0:
-
-        raise Exception(
-
-            "No animal identified"
-
-        )
-
-
-    best = result[
-        "results"
-    ][0]
-
-
-    scientific_name = best[
-        "taxon"
-    ][
-        "name"
-    ]
-
-
-    common_name = best[
-        "taxon"
-    ].get(
-
-        "preferred_common_name",
-
-        scientific_name
-
-    )
-
-
-    confidence = round(
-
-        best["combined_score"] * 100,
-
-        2
+        "0%"
 
     )
 
@@ -326,7 +297,7 @@ def home(request):
             uploaded_image = request.FILES["image"]
 
 
-            # Open image for Gemini
+            # Open image
 
             image = Image.open(
                 uploaded_image
@@ -373,7 +344,7 @@ def home(request):
 
 
             # =========================================
-            # PLANT
+            # PLANT IDENTIFICATION
             # =========================================
 
             if organism_type == "PLANT":
@@ -388,14 +359,14 @@ def home(request):
 
 
             # =========================================
-            # ANIMAL
+            # ANIMAL IDENTIFICATION
             # =========================================
 
             else:
 
                 common_name, scientific_name, confidence = identify_animal(
 
-                    uploaded_image
+                    image
 
                 )
 
@@ -554,12 +525,10 @@ def home(request):
 
             uploaded_image.seek(0)
 
-            image_for_db = request.FILES["image"]
-
 
             Identification.objects.create(
 
-                image=image_for_db,
+                image=uploaded_image,
 
                 organism_type=organism_type,
 
