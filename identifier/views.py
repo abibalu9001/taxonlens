@@ -41,6 +41,9 @@ model = genai.GenerativeModel(
 # PlantNet Function
 # ==============================
 
+from io import BytesIO
+
+
 def identify_plant(image_file):
 
     api_key = os.environ.get(
@@ -55,11 +58,46 @@ def identify_plant(image_file):
 
     )
 
+
+    # Open image
+
+    img = Image.open(image_file)
+
+
+    # Convert WEBP/HEIC/etc → RGB
+
+    img = img.convert("RGB")
+
+
+    # Save as JPEG in memory
+
+    buffer = BytesIO()
+
+    img.save(
+
+        buffer,
+
+        format="JPEG"
+
+    )
+
+    buffer.seek(0)
+
+
     files = {
 
-        "images": image_file
+        "images": (
+
+            "image.jpg",
+
+            buffer,
+
+            "image/jpeg"
+
+        )
 
     }
+
 
     response = requests.post(
 
@@ -69,10 +107,11 @@ def identify_plant(image_file):
 
     )
 
+
     data = response.json()
 
 
-    # Safety check
+    # Safety checks
 
     if "results" not in data:
 
@@ -126,7 +165,7 @@ def identify_plant(image_file):
 # iNaturalist Function
 # ==============================
 
-def identify_animal(image_url):
+def identify_animal(image_file):
 
     url = (
 
@@ -136,24 +175,60 @@ def identify_animal(image_url):
 
     )
 
-    data = {
 
-        "image_url": image_url
+    # Open image
+
+    img = Image.open(image_file)
+
+
+    # Convert to RGB
+
+    img = img.convert("RGB")
+
+
+    # Save as JPEG in memory
+
+    buffer = BytesIO()
+
+    img.save(
+
+        buffer,
+
+        format="JPEG"
+
+    )
+
+    buffer.seek(0)
+
+
+    files = {
+
+        "image": (
+
+            "image.jpg",
+
+            buffer,
+
+            "image/jpeg"
+
+        )
 
     }
+
 
     response = requests.post(
 
         url,
 
-        data=data
+        files=files
 
     )
+
 
     result = response.json()
 
 
-    # Safety check
+    # Safety checks
 
     if "results" not in result:
 
