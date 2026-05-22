@@ -13,9 +13,27 @@ class Identification(models.Model):
 
     )
 
-    common_name = models.CharField(max_length=200)
+    organism_type = models.CharField(
 
-    scientific_name = models.CharField(max_length=200)
+        max_length=50,
+
+        blank=True,
+
+        null=True
+
+    )
+
+    common_name = models.CharField(
+
+        max_length=200
+
+    )
+
+    scientific_name = models.CharField(
+
+        max_length=200
+
+    )
 
     family_name = models.CharField(
 
@@ -40,6 +58,22 @@ class Identification(models.Model):
     confidence = models.CharField(
 
         max_length=50,
+
+        blank=True,
+
+        null=True
+
+    )
+
+    wikipedia_link = models.TextField(
+
+        blank=True,
+
+        null=True
+
+    )
+
+    description = models.TextField(
 
         blank=True,
 

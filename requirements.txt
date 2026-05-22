@@ -1,7 +1,17 @@
 Django==5.2.1
+
 Pillow==11.2.1
+
 google-generativeai==0.8.5
+
 gunicorn==23.0.0
+
 whitenoise==6.9.0
+
 dj-database-url==3.0.1
+
 psycopg2-binary
+
+requests
+
+python-dotenv

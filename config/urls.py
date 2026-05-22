@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from django.urls import path, include
+from django.urls import path
+
+from identifier.views import home
 
 from django.conf import settings
 
@@ -9,23 +11,19 @@ from django.conf.urls.static import static
 
 urlpatterns = [
 
-    path(
-        'admin/',
-        admin.site.urls
-    ),
+    path('admin/', admin.site.urls),
 
-    path(
-        '',
-        include('identifier.urls')
-    ),
+    path('', home),
 
 ]
 
 
-urlpatterns += static(
+if settings.DEBUG:
 
-    settings.MEDIA_URL,
+    urlpatterns += static(
 
-    document_root=settings.MEDIA_ROOT
+        settings.MEDIA_URL,
 
-)
+        document_root=settings.MEDIA_ROOT
+
+    )

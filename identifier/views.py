@@ -10,8 +10,12 @@ from .models import Identification
 
 import os
 
+import requests
 
+
+# ==============================
 # Configure Gemini API
+# ==============================
 
 genai.configure(
 
@@ -22,7 +26,9 @@ genai.configure(
 )
 
 
+# ==============================
 # Gemini Model
+# ==============================
 
 model = genai.GenerativeModel(
 
@@ -30,6 +36,143 @@ model = genai.GenerativeModel(
 
 )
 
+
+# ==============================
+# PlantNet Function
+# ==============================
+
+def identify_plant(image_file):
+
+    api_key = os.environ.get(
+        "PLANTNET_API_KEY"
+    )
+
+    url = (
+
+        f"https://my-api.plantnet.org/v2/identify/all"
+
+        f"?api-key={api_key}"
+
+    )
+
+    files = {
+
+        "images": image_file
+
+    }
+
+    response = requests.post(
+
+        url,
+
+        files=files
+
+    )
+
+    data = response.json()
+
+
+    best_match = data[
+        "results"
+    ][0]
+
+
+    scientific_name = best_match[
+        "species"
+    ][
+        "scientificNameWithoutAuthor"
+    ]
+
+
+    confidence = round(
+
+        best_match["score"] * 100,
+
+        2
+
+    )
+
+
+    return scientific_name, confidence
+
+
+# ==============================
+# iNaturalist Function
+# ==============================
+
+def identify_animal(image_url):
+
+    url = (
+
+        "https://api.inaturalist.org/v1/"
+
+        "computervision/score_image"
+
+    )
+
+    data = {
+
+        "image_url": image_url
+
+    }
+
+    response = requests.post(
+
+        url,
+
+        data=data
+
+    )
+
+    result = response.json()
+
+
+    best = result[
+        "results"
+    ][0]
+
+
+    scientific_name = best[
+        "taxon"
+    ][
+        "name"
+    ]
+
+
+    common_name = best[
+        "taxon"
+    ].get(
+
+        "preferred_common_name",
+
+        scientific_name
+
+    )
+
+
+    confidence = round(
+
+        best["combined_score"] * 100,
+
+        2
+
+    )
+
+
+    return (
+
+        common_name,
+
+        scientific_name,
+
+        confidence
+
+    )
+
+
+# ==============================
+# Main Home View
+# ==============================
 
 def home(request):
 
@@ -49,59 +192,41 @@ def home(request):
 
     ai_cost = 0
 
+    organism_type = ""
+
 
     if request.method == "POST":
 
         try:
 
-            # Original uploaded file
+            # ==============================
+            # Uploaded Image
+            # ==============================
 
             uploaded_image = request.FILES["image"]
-
-
-            # Open image using Pillow
 
             image = Image.open(
                 uploaded_image
             )
 
 
-            # Send image to Gemini
+            # ==============================
+            # Detect Plant or Animal
+            # ==============================
 
-            response = model.generate_content([
+            classify = model.generate_content([
 
                 """
-                Identify this organism carefully.
 
-                Return ONLY valid JSON.
+                Is this image a PLANT or ANIMAL?
 
-                {
+                Reply ONLY with:
 
-                  "common_name": "",
+                PLANT
 
-                  "scientific_name": "",
+                or
 
-                  "family_name": "",
-
-                  "tamil_name": "",
-
-                  "confidence": "",
-
-                  "wikipedia_link": "",
-
-                  "description": ""
-
-                }
-
-                Rules:
-
-                - confidence must be percentage estimate
-
-                - wikipedia link must be valid
-
-                - tamil_name should be in Tamil language if known
-
-                - description should be short
+                ANIMAL
 
                 """,
 
@@ -110,50 +235,129 @@ def home(request):
             ])
 
 
-            # Get Gemini response text
+            organism_type = (
+
+                classify.text
+                .strip()
+                .upper()
+
+            )
+
+
+            # ==============================
+            # PLANT IDENTIFICATION
+            # ==============================
+
+            if organism_type == "PLANT":
+
+                scientific_name, confidence = identify_plant(
+
+                    uploaded_image
+
+                )
+
+                common_name = scientific_name
+
+
+            # ==============================
+            # ANIMAL IDENTIFICATION
+            # ==============================
+
+            else:
+
+                # Save temporary object
+
+                temp = Identification.objects.create(
+
+                    image=uploaded_image,
+
+                    common_name="Processing",
+
+                    scientific_name="Processing"
+
+                )
+
+
+                # Get image URL
+
+                image_url = request.build_absolute_uri(
+
+                    temp.image.url
+
+                )
+
+
+                # Identify animal
+
+                common_name, scientific_name, confidence = identify_animal(
+
+                    image_url
+
+                )
+
+
+            # ==============================
+            # Gemini Enrichment
+            # ==============================
+
+            response = model.generate_content(
+
+                f"""
+
+                Give details for:
+
+                {scientific_name}
+
+                Return ONLY valid JSON.
+
+                {{
+
+                  "common_name": "",
+
+                  "family_name": "",
+
+                  "tamil_name": "",
+
+                  "wikipedia_link": "",
+
+                  "description": ""
+
+                }}
+
+                """
+
+            )
+
+
+            # ==============================
+            # Clean Response
+            # ==============================
 
             text = response.text
 
-
-            # Remove markdown formatting
-
             text = text.replace(
-
                 "```json",
-
                 ""
-
             )
 
             text = text.replace(
-
                 "```",
-
                 ""
-
             )
 
 
-            # Convert JSON text to dictionary
+            # ==============================
+            # Parse JSON
+            # ==============================
 
             data = json.loads(text)
 
-
-            # Extract data
 
             common_name = data.get(
 
                 "common_name",
 
-                "-"
-
-            )
-
-            scientific_name = data.get(
-
-                "scientific_name",
-
-                "-"
+                common_name
 
             )
 
@@ -170,14 +374,6 @@ def home(request):
                 "tamil_name",
 
                 "-"
-
-            )
-
-            confidence = data.get(
-
-                "confidence",
-
-                "0%"
 
             )
 
@@ -198,7 +394,9 @@ def home(request):
             )
 
 
-            # ===== REAL AI COST =====
+            # ==============================
+            # AI COST CALCULATION
+            # ==============================
 
             usage = response.usage_metadata
 
@@ -216,8 +414,6 @@ def home(request):
 
             )
 
-
-            # Gemini Flash Pricing
 
             input_cost = (
 
@@ -242,11 +438,15 @@ def home(request):
             )
 
 
-            # Save to database
+            # ==============================
+            # Save Final Result
+            # ==============================
 
             Identification.objects.create(
 
                 image=uploaded_image,
+
+                organism_type=organism_type,
 
                 common_name=common_name,
 
@@ -257,6 +457,10 @@ def home(request):
                 tamil_name=tamil_name,
 
                 confidence=confidence,
+
+                wikipedia_link=wikipedia_link,
+
+                description=description,
 
                 ai_cost=ai_cost
 
@@ -293,6 +497,8 @@ def home(request):
         "index.html",
 
         {
+
+            "organism_type": organism_type,
 
             "common_name": common_name,
 

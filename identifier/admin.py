@@ -11,6 +11,8 @@ class IdentificationAdmin(admin.ModelAdmin):
 
         'id',
 
+        'organism_type',
+
         'common_name',
 
         'scientific_name',
@@ -18,8 +20,6 @@ class IdentificationAdmin(admin.ModelAdmin):
         'family_name',
 
         'confidence',
-
-        'ai_cost',
 
         'created_at'
 
@@ -37,14 +37,10 @@ class IdentificationAdmin(admin.ModelAdmin):
 
     list_filter = (
 
+        'organism_type',
+
         'family_name',
 
         'created_at'
-
-    )
-
-    readonly_fields = (
-
-        'created_at',
 
     )
