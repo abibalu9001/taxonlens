@@ -555,7 +555,31 @@ def home(request):
 
             common_name = "Error"
 
-            scientific_name = str(e)
+
+            if "Species not found" in str(e):
+
+                scientific_name = (
+
+                    "No plant could be identified."
+
+                )
+
+            elif "No plant identified" in str(e):
+
+                scientific_name = (
+
+                    "Please upload a clearer plant image."
+
+                )
+
+            else:
+
+                scientific_name = (
+
+                    "Identification failed."
+
+                )
+
 
             family_name = "-"
 
