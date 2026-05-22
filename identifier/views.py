@@ -12,10 +12,12 @@ import os
 
 import requests
 
+from io import BytesIO
 
-# ==============================
-# Configure Gemini API
-# ==============================
+
+# =========================================
+# Configure Gemini
+# =========================================
 
 genai.configure(
 
@@ -26,9 +28,9 @@ genai.configure(
 )
 
 
-# ==============================
+# =========================================
 # Gemini Model
-# ==============================
+# =========================================
 
 model = genai.GenerativeModel(
 
@@ -37,12 +39,9 @@ model = genai.GenerativeModel(
 )
 
 
-# ==============================
-# PlantNet Function
-# ==============================
-
-from io import BytesIO
-
+# =========================================
+# PLANT IDENTIFICATION
+# =========================================
 
 def identify_plant(image_file):
 
@@ -64,12 +63,12 @@ def identify_plant(image_file):
     img = Image.open(image_file)
 
 
-    # Convert WEBP/HEIC/etc → RGB
+    # Convert unsupported formats
 
     img = img.convert("RGB")
 
 
-    # Save as JPEG in memory
+    # Convert to JPEG in memory
 
     buffer = BytesIO()
 
@@ -161,9 +160,9 @@ def identify_plant(image_file):
     )
 
 
-# ==============================
-# iNaturalist Function
-# ==============================
+# =========================================
+# ANIMAL IDENTIFICATION
+# =========================================
 
 def identify_animal(image_file):
 
@@ -186,7 +185,7 @@ def identify_animal(image_file):
     img = img.convert("RGB")
 
 
-    # Save as JPEG in memory
+    # Convert to JPEG
 
     buffer = BytesIO()
 
@@ -290,9 +289,10 @@ def identify_animal(image_file):
 
     )
 
-# ==============================
-# Main Home View
-# ==============================
+
+# =========================================
+# MAIN HOME VIEW
+# =========================================
 
 def home(request):
 
@@ -319,20 +319,23 @@ def home(request):
 
         try:
 
-            # ==============================
+            # =========================================
             # Uploaded Image
-            # ==============================
+            # =========================================
 
             uploaded_image = request.FILES["image"]
+
+
+            # Open image for Gemini
 
             image = Image.open(
                 uploaded_image
             )
 
 
-            # ==============================
-            # Detect Plant or Animal
-            # ==============================
+            # =========================================
+            # Detect PLANT or ANIMAL
+            # =========================================
 
             classify = model.generate_content([
 
@@ -364,9 +367,14 @@ def home(request):
             )
 
 
-            # ==============================
-            # PLANT IDENTIFICATION
-            # ==============================
+            # Reset file pointer
+
+            uploaded_image.seek(0)
+
+
+            # =========================================
+            # PLANT
+            # =========================================
 
             if organism_type == "PLANT":
 
@@ -379,46 +387,22 @@ def home(request):
                 common_name = scientific_name
 
 
-            # ==============================
-            # ANIMAL IDENTIFICATION
-            # ==============================
+            # =========================================
+            # ANIMAL
+            # =========================================
 
             else:
 
-                # Save temporary object
-
-                temp = Identification.objects.create(
-
-                    image=uploaded_image,
-
-                    common_name="Processing",
-
-                    scientific_name="Processing"
-
-                )
-
-
-                # Get image URL
-
-                image_url = request.build_absolute_uri(
-
-                    temp.image.url
-
-                )
-
-
-                # Identify animal
-
                 common_name, scientific_name, confidence = identify_animal(
 
-                    image_url
+                    uploaded_image
 
                 )
 
 
-            # ==============================
-            # Gemini Enrichment
-            # ==============================
+            # =========================================
+            # GEMINI ENRICHMENT
+            # =========================================
 
             response = model.generate_content(
 
@@ -449,26 +433,32 @@ def home(request):
             )
 
 
-            # ==============================
-            # Clean Response
-            # ==============================
+            # =========================================
+            # Clean Gemini Response
+            # =========================================
 
             text = response.text
 
             text = text.replace(
+
                 "```json",
+
                 ""
+
             )
 
             text = text.replace(
+
                 "```",
+
                 ""
+
             )
 
 
-            # ==============================
+            # =========================================
             # Parse JSON
-            # ==============================
+            # =========================================
 
             data = json.loads(text)
 
@@ -514,9 +504,9 @@ def home(request):
             )
 
 
-            # ==============================
-            # AI COST CALCULATION
-            # ==============================
+            # =========================================
+            # AI COST
+            # =========================================
 
             usage = response.usage_metadata
 
@@ -558,13 +548,18 @@ def home(request):
             )
 
 
-            # ==============================
-            # Save Final Result
-            # ==============================
+            # =========================================
+            # SAVE TO DATABASE
+            # =========================================
+
+            uploaded_image.seek(0)
+
+            image_for_db = request.FILES["image"]
+
 
             Identification.objects.create(
 
-                image=uploaded_image,
+                image=image_for_db,
 
                 organism_type=organism_type,
 
